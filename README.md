@@ -1,4 +1,5 @@
-Top Paid Job Analysis
+**Top Paid Job Analysis**
+
 This project aims to analyze job criteria and pay ranges to identify top-paid jobs in specific fields. The process involves:
 
 Crawling at least three job websites (e.g., Indeed, CareerBuilder, Glassdoor, Monster).
