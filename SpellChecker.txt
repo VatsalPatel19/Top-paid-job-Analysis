@@ -1,0 +1,118 @@
+package FirstFolder;
+
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
+
+public class SpellChecker {
+
+    public static void main(String[] args) {
+        SpellChecker spellChecker = new SpellChecker();
+        spellChecker.spellCheck();
+    }
+
+    public void spellCheck() {
+        Set<String> inpFileDictionary = generateDictionary();
+
+        // Print the inpFileDictionary
+        System.out.println("Generated Dictionary:");
+        for (String dictWord : inpFileDictionary) {
+            System.out.println(dictWord);
+        }
+
+        // Ask the user for a dictWord to check
+        System.out.print("\nEnter a dictWord to check the spelling: ");
+        String userInpWord = getUserInputSpell();
+
+        // Check the spelling
+        if (inpFileDictionary.contains(userInpWord)) {
+            System.out.println("Spelling is correct");
+        } else {
+            String suggestion = findClosestMatch(userInpWord, inpFileDictionary);
+            int distance = calculateLevenshteinDistance(userInpWord, suggestion);
+            System.out.println("Spelling is incorrect. Did you mean '" + suggestion + "'?");
+        }
+
+        System.out.print("\nDo you want to check another dictWord? (yes/no): ");
+        String contSpell = getUserInputSpell();
+        if (contSpell.equals("yes")) {
+            spellCheck();  // Call the spellCheck method recursively
+        } else {
+            System.out.println("Exiting the spell checker. Goodbye!");
+        }
+    }
+
+    private static Set<String> generateDictionary() {
+        Set<String> inpFileDictionary = new HashSet<>();
+
+        // Read words from each file and add them to the inpFileDictionary
+        String[] filePaths = {
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\indeed.txt",
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\monster.txt",
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\randstand.txt"
+        };
+
+        for (String filePath : filePaths) {
+            try (Scanner scanner = new Scanner(new java.io.FileReader(filePath))) {
+                while (scanner.hasNext()) {
+                    // Split the line into words and add them to the inpFileDictionary
+                    String[] words = scanner.next().split("\\s+");
+                    for (String dictWord : words) {
+                        inpFileDictionary.add(dictWord.toLowerCase()); // Convert to lowercase for case-insensitive comparison
+                    }
+                }
+            } catch (java.io.IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        return inpFileDictionary;
+    }
+
+    private static String getUserInputSpell() {
+        Scanner scanner = new Scanner(System.in);
+        return scanner.nextLine().toLowerCase(); // Convert to lowercase for case-insensitive comparison
+    }
+
+
+    private static String findClosestMatch(String input, Set<String> inpFileDictionary) {
+        int minDistance = Integer.MAX_VALUE;
+        String closestMatch = "";
+
+        for (String dictWord : inpFileDictionary) {
+            int distance = calculateLevenshteinDistance(input, dictWord);
+            if (distance < minDistance) {
+                minDistance = distance;
+                closestMatch = dictWord;
+            }
+        }
+
+        return closestMatch;
+    }
+
+    private static int calculateLevenshteinDistance(String word1, String word2) {
+        int[][] dp = new int[word1.length() + 1][word2.length() + 1];
+
+        for (int cal = 0; cal <= word1.length(); cal++) {
+            for (int dist = 0; dist <= word2.length(); dist++) {
+                if (cal == 0) {
+                    dp[cal][dist] = dist;
+                } else if (dist == 0) {
+                    dp[cal][dist] = cal;
+                } else {
+                    dp[cal][dist] = min(
+                            dp[cal - 1][dist - 1] + (word1.charAt(cal - 1) == word2.charAt(dist - 1) ? 0 : 1),
+                            dp[cal - 1][dist] + 1,
+                            dp[cal][dist - 1] + 1
+                    );
+                }
+            }
+        }
+
+        return dp[word1.length()][word2.length()];
+    }
+
+    private static int min(int a, int b, int c) {
+        return Math.min(Math.min(a, b), c);
+    }
+}

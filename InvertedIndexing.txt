@@ -1,0 +1,106 @@
+package FirstFolder;
+
+import java.util.*;
+import java.io.*;
+
+public class InvertedIndexing {
+    private List<String> inputDocFiles;
+    private TrieNode indexRoot;
+
+    public InvertedIndexing(List<String> inputDocFiles) {
+        this.inputDocFiles = inputDocFiles;
+        this.indexRoot = buildIndex();
+    }
+
+    private TrieNode buildIndex() {
+        TrieNode trieRootNode = new TrieNode();
+        for (int docId = 0; docId < inputDocFiles.size(); docId++) {
+            String[] inpDocFilesWords = inputDocFiles.get(docId).toLowerCase().split("\\s+");
+            for (String word : inpDocFilesWords) {
+                TrieNode trieCurrentNode = trieRootNode;
+                for (char c : word.toCharArray()) {
+                    trieCurrentNode.children.putIfAbsent(c, new TrieNode());
+                    trieCurrentNode = trieCurrentNode.children.get(c);
+                }
+                trieCurrentNode.documentIds.add(docId);
+            }
+        }
+        return trieRootNode;
+    }
+
+    public Set<Integer> searchWordInTrie(String query) {
+        TrieNode trieCurrentNode = indexRoot;
+        for (char c : query.toLowerCase().toCharArray()) {
+            trieCurrentNode = trieCurrentNode.children.get(c);
+            if (trieCurrentNode == null) {
+                return Collections.emptySet();
+            }
+        }
+        return trieCurrentNode.documentIds;
+    }
+
+    private static class TrieNode {
+        Map<Character, TrieNode> children = new HashMap<>();
+        Set<Integer> documentIds = new HashSet<>();
+    }
+
+    public List<String> getMatchingFiles(String queryWord, List<String> filenames) {
+        List<String> matchingFiles = new ArrayList<>();
+        for (String inpFileName : filenames) {
+            Set<Integer> trieSearchRes = searchWordInTrie(queryWord);
+            if (!trieSearchRes.isEmpty()) {
+                matchingFiles.add(inpFileName);
+            }
+        }
+        return matchingFiles;
+    }
+
+    public void processQueries() {
+        Scanner scanner = new Scanner(System.in);
+        String contRank = "yes";
+
+        while (contRank.equals("yes")) {
+            System.out.print("Enter the query word: ");
+            String queryWord = scanner.nextLine();
+
+            List<String> filenames = List.of(
+                    "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\indeed.txt",
+                    "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\monster.txt",
+                    "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\randstand.txt"
+            );
+
+            System.out.println(queryWord + " -> " + getMatchingFiles(queryWord, filenames));
+
+            System.out.print("\nDo you want to check another word? (yes/no): ");
+            contRank = scanner.nextLine().toLowerCase();
+        }
+
+        System.out.println("Exiting the inverted indexing. Goodbye!");
+    }
+
+    public static void main(String[] args) {
+        // Read inputDocFiles from the output files of the web crawler
+        List<String> inputDocFiles = readDocumentsFromFiles(List.of(
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\indeed.txt",
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\monster.txt",
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\randstand.txt"
+        ));
+
+        InvertedIndexing invertedIndexing = new InvertedIndexing(inputDocFiles);
+        invertedIndexing.processQueries();
+    }
+
+    private static List<String> readDocumentsFromFiles(List<String> filenames) {
+        List<String> inputDocFiles = new ArrayList<>();
+        for (String inpFileName : filenames) {
+            try (Scanner scanner = new Scanner(new FileReader(inpFileName))) {
+                while (scanner.hasNextLine()) {
+                    inputDocFiles.add(scanner.nextLine());
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return inputDocFiles;
+    }
+}

@@ -1,0 +1,55 @@
+package FirstFolder;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.edge.EdgeDriver;
+
+import java.util.List;
+import java.util.Scanner;
+
+public class htmlparser {
+
+    public static void main(String[] args) {
+        // Set the path to the Microsoft Edge WebDriver executable
+        System.setProperty("webdriver.edge.edDriver", "C:\\Users\\vksp1\\Downloads\\Resources\\Resources\\msedgedriver.exe");
+
+        // Provide a list of webObj to visit
+        List<String> websiteToParse = List.of("https://ca.indeed.com/career-advice/career-development/highest-paying-jobs", 
+        		"https://www.monster.ca/career-advice/article/best-future-jobs", 
+        		"https://www.randstad.ca/job-seeker/career-resources/salary/highest-paying-jobs-in-canada/");
+
+        // Create a new instance of the EdgeDriver
+        WebDriver edDriver = new EdgeDriver();
+
+        for (String webObj : websiteToParse) {
+            // Navigate to the current webObj
+            edDriver.get(webObj);
+
+            // Get the websiteTitleToScrape of the web page
+            String websiteTitleToScrape = edDriver.getTitle();
+            System.out.println("Title of " + webObj + ": " + websiteTitleToScrape);
+
+            // Find and print all paragraphs on the web page
+            System.out.println("Paragraphs of " + webObj + ":");
+            for (WebElement websiteParagraphToScrape : edDriver.findElements(By.tagName("p"))) {
+                System.out.println(websiteParagraphToScrape.getText());
+            }
+
+            // Print a separator between website
+            System.out.println("------------------------------");
+        }
+
+        // Close the WebDriver
+        edDriver.quit();
+        
+        System.out.print("\nDo you want to check another word? (yes/no): ");
+        Scanner scanHtmlParser = new Scanner(System.in);
+        String htmlParse = scanHtmlParser.nextLine().toLowerCase();
+        if (htmlParse.equals("yes")) {
+        	main(args);  // Call the spellCheck method recursively
+        } else {
+            System.out.println("Exiting the html parser. Goodbye!");
+        }
+    }
+}

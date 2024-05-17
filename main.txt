@@ -1,0 +1,318 @@
+package FirstFolder;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.InputMismatchException;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
+
+public class main {
+	public static void main(String[] args) {
+		List<String> documents = (List.of(
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\indeed.txt",
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\monster.txt",
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\randstand.txt"
+        ));
+        Scanner scanner = new Scanner(System.in); // Add this line to create a Scanner object
+        scrapeDataOrNo();
+
+        try {
+            do {
+                printMenu();
+                int choice = getUserChoice(scanner); // Pass the scanner object to getUserChoice
+
+                switch (choice) {
+                    case 1:
+                    	SpellChecker SC = new SpellChecker();
+                        SC.spellCheck();
+                    	break;
+                    case 2:
+                    	ferquencycount wordCounter = new ferquencycount();
+                        wordCounter.wordCount();
+                        break;
+                    case 3:
+                        pagerank PR = new pagerank();
+                        PR.pageRanking();
+                        break;
+                    case 4:
+                    	wordcomppletion  WordComplete = new wordcomppletion();
+                        WordComplete.main(args);
+                        break;
+                    case 5:
+                    	InvertedIndexing invertedIndexing = new InvertedIndexing(documents);
+                    	invertedIndexing.main(args);
+                        break;
+                    case 6:
+                    	htmlparser HP = new htmlparser();
+                    	HP.main(args);
+                        break;
+                    case 7:
+                    	Data_Validation_Using_Regex validator = new Data_Validation_Using_Regex();
+                    	validator.runDataValidationFeature();
+                        break;
+                    case 8:
+                    	Pattern_Regex PRGX = new Pattern_Regex();
+                    	PRGX.main(args);
+                    	break;
+                    case 9:
+                        System.out.println("Exiting the program. Goodbye!");
+                        return;  // This will exit the entire main method
+                    default:
+                        System.out.println("Invalid choice. Please enter a number between 1 and 9.");
+                }
+            } while (true);
+        } catch (NoSuchElementException e) {
+            System.out.println("Invalid input. Exiting the program.");
+        } finally {
+            scanner.close(); // Close the scanner to avoid resource leaks
+        }
+    }	
+
+	private static void scrapeDataOrNo() {
+		Scanner scannerSC = new Scanner(System.in);
+
+        System.out.print("Do you want to scrape the data? ");
+        String scrapeOrNo = scannerSC.nextLine();
+
+        // Convert the entered string to lowercase
+        String lowercaseInput = scrapeOrNo.toLowerCase();
+		
+        if (scrapeOrNo.equals("yes")) {
+            
+        }
+	}
+
+    private static void indeedJobs() {
+        System.setProperty("webdriver.edge.driver", "C:\\Users\\vksp1\\Downloads\\Resources\\Resources\\msedgedriver.exe");
+        WebDriver driver = new EdgeDriver();
+        driver.get("https://ca.indeed.com/career-advice/career-development/highest-paying-jobs");
+
+        WebDriverWait webdwait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        webdwait.until(ExpectedConditions.jsReturnsValue("return document.readyState === 'complete';"));
+
+        List<String> jobTitles = new ArrayList<>();
+        List<String> averageSalaries = new ArrayList<>();
+        List<String> jobDescriptions = new ArrayList<>();
+        List<String> jobQualifications = new ArrayList<>();
+
+        int[] jobDescriptionIndices = {6, 9, 13, 16, 20, 24, 27, 30, 33, 36, 39, 42};
+        int[] jobQualificationIndices = {7, 10, 14, 17, 21, 25, 28, 31, 34, 37, 40, 43};
+
+        for (int i = 1; i <= 12; i++) {
+            String jobTitleXPath = "//div[1]/h3[" + i + "]/a";
+            String averageSalaryXPath = "(//p[@class='rich-text-component css-1g5t2dl e1wnkr790']/span[@class='css-n3w4ap eu4oa1w0' and contains(text(), 'National average salary:')]/following-sibling::a[@class='e19afand0 css-1nhptu4 eac13zx0'])[" + i + "]";
+
+            scrollToElement(driver, By.xpath(jobTitleXPath));
+            WebElement jobTitleElement = webdwait.until(ExpectedConditions.elementToBeClickable(By.xpath(jobTitleXPath)));
+            jobTitles.add(jobTitleElement.getText());
+
+            scrollToElement(driver, By.xpath(averageSalaryXPath));
+            WebElement averageSalaryElement = webdwait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(averageSalaryXPath)));
+            averageSalaries.add(averageSalaryElement.getText());
+
+            WebElement jobDescriptionElement = driver.findElement(By.xpath("/html/body/div[2]/main/div/div[1]/p[" + jobDescriptionIndices[i - 1] + "]"));
+            jobDescriptions.add(jobDescriptionElement.getText());
+
+            WebElement jobQualificationElement = driver.findElement(By.xpath("/html/body/div[2]/main/div/div[1]/p[" + jobQualificationIndices[i - 1] + "]"));
+            jobQualifications.add(jobQualificationElement.getText());
+        }
+
+        try (FileWriter writer = new FileWriter("C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\indeed.txt")) {
+            writer.write("Indeed\n\n");
+            for (int indeedJobsIndex = 0; indeedJobsIndex < 12; indeedJobsIndex++) {
+                writer.write("\tJob Title: " + jobTitles.get(indeedJobsIndex) + "\n");
+                writer.write("\tAverage Salary: " + averageSalaries.get(indeedJobsIndex) + "\n");
+                writer.write("\t" + jobDescriptions.get(indeedJobsIndex) + "\n");
+                writer.write("\t" + jobQualifications.get(indeedJobsIndex) + "\n\n");
+            }
+            System.out.println("Indeed data written to file successfully!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        driver.quit();
+    }
+
+    private static void monsterJobs() {
+        System.setProperty("webdriver.edge.driver", "C:\\Users\\vksp1\\Downloads\\Resources\\Resources\\msedgedriver.exe");
+        WebDriver driver = new EdgeDriver();
+        driver.get("https://www.monster.ca/career-advice/article/best-future-jobs");
+
+        WebDriverWait webdwaitMonster = new WebDriverWait(driver, Duration.ofSeconds(10));
+        webdwaitMonster.until(ExpectedConditions.jsReturnsValue("return document.readyState === 'complete';"));
+
+        List<String> monsterJobTitles = new ArrayList<>();
+        List<String> monsterAverageSalaries = new ArrayList<>();
+        List<String> monsterJobDescriptions = new ArrayList<>();
+        List<String> monsterJobQualifications = new ArrayList<>();
+
+        int[] monsterAverageSalaryIndices = {5, 9, 13, 17, 21};
+        int[] monsterJobDescriptionIndices = {3, 7, 11, 15, 19};
+        int[] monsterJobQualificationIndices = {4, 8, 12, 16, 20};
+
+        for (int i = 1; i <= 5; i++) {
+            String monsterJobTitleXPath = "/html/body/div[1]/div[2]/div/div/div/main/div[3]/div[1]/article/div/div[2]/div/h3[" + i + "]";
+            String monsterAverageSalaryXPath = "/html/body/div[1]/div[2]/div/div/div/main/div[3]/div[1]/article/div/div[2]/div/p[" + monsterAverageSalaryIndices[i - 1] + "]";
+            String monsterJobDescriptionXPath = "/html/body/div[1]/div[2]/div/div/div/main/div[3]/div[1]/article/div/div[2]/div/p[" + monsterJobDescriptionIndices[i - 1] + "]";
+            String monsterJobQualificationXPath = "/html/body/div[1]/div[2]/div/div/div/main/div[3]/div[1]/article/div/div[2]/div/p[" + monsterJobQualificationIndices[i - 1] + "]";
+
+            scrollToElement(driver, By.xpath(monsterJobTitleXPath));
+            WebElement monsterJobTitleElement = webdwaitMonster.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(monsterJobTitleXPath)));
+            monsterJobTitles.add(monsterJobTitleElement.getText());
+
+            scrollToElement(driver, By.xpath(monsterAverageSalaryXPath));
+            WebElement monsterAverageSalaryElement = webdwaitMonster.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(monsterAverageSalaryXPath)));
+            monsterAverageSalaries.add(monsterAverageSalaryElement.getText());
+
+            scrollToElement(driver, By.xpath(monsterJobDescriptionXPath));
+            WebElement monsterJobDescriptionElement = webdwaitMonster.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(monsterJobDescriptionXPath)));
+            monsterJobDescriptions.add(monsterJobDescriptionElement.getText());
+
+            scrollToElement(driver, By.xpath(monsterJobQualificationXPath));
+            WebElement monsterJobQualificationElement = webdwaitMonster.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(monsterJobQualificationXPath)));
+            monsterJobQualifications.add(monsterJobQualificationElement.getText());
+        }
+
+        try (FileWriter writer = new FileWriter("C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\monster.txt")) {
+            writer.write("Monster\n\n");
+            for (int monsterJobsIndex = 0; monsterJobsIndex < 5; monsterJobsIndex++) {
+                writer.write("\tJob Title: " + monsterJobTitles.get(monsterJobsIndex) + "\n");
+                writer.write("\t" + monsterAverageSalaries.get(monsterJobsIndex) + "\n");
+                writer.write("\t" + monsterJobDescriptions.get(monsterJobsIndex) + "\n");
+                writer.write("\t" + monsterJobQualifications.get(monsterJobsIndex) + "\n\n");
+            }
+            System.out.println("Monster data written to file successfully!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        driver.quit();
+    }
+
+    private static void randstandJobs() {
+        System.setProperty("webdriver.edge.driver", "C:\\Users\\vksp1\\Downloads\\Resources\\Resources\\msedgedriver.exe");
+        WebDriver driver = new EdgeDriver();
+        driver.get("https://www.randstad.ca/job-seeker/career-resources/salary/highest-paying-jobs-in-canada/");
+
+        handleCookiesPopUp(driver);
+        handleSubscribePopUp(driver);
+
+        try {
+            // Add a sleep to wait for the page to load
+            Thread.sleep(5000); // You can adjust the sleep duration as needed
+
+            List<String> randstandJobs = new ArrayList<>();
+
+            int[] nonManagerJobsIndices = {1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25};
+
+            for (int i = 0; i < 13; i++) {
+                String randstandJobsIndex = "/html/body/div[2]/div/main/div/div[1]/article/div[" + nonManagerJobsIndices[i] + "]";
+                
+                // Scroll to bring the Non-Manager Job Title into view
+                scrollToElementRandstand(driver, By.xpath(randstandJobsIndex));
+
+                // Additional wait for the Non-Manager Job Title to be visible
+                WebElement nonManagerJobTitleElement = driver.findElement(By.xpath(randstandJobsIndex));
+                randstandJobs.add(nonManagerJobTitleElement.getText());
+            }
+
+            // Step 3: Store the data in a text file
+            try (FileWriter writer = new FileWriter("C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\randstand.txt")) {
+                writer.write("Randstand\n\n");
+                for (int randstandJobsIndex = 0; randstandJobsIndex < 13; randstandJobsIndex++) {
+                    writer.write(randstandJobs.get(randstandJobsIndex) + "\n\n");
+                    // Assuming you have details to add, modify this line accordingly
+                    // writer.write("\tJob Details: " + nonManagerJobDetails.get(randstandJobsIndex) + "\n\n");
+                }
+                System.out.println("Randstand data written to file successfully!");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } finally {
+            driver.quit();
+        }
+    }
+
+
+    private static void handleCookiesPopUp(WebDriver driver) {
+        try {
+            WebElement acceptCookiesButton = driver.findElement(By.id("onetrust-accept-btn-handler"));
+            if (acceptCookiesButton.isDisplayed()) {
+                acceptCookiesButton.click();
+            }
+        } catch (Exception e) {
+            // Handle exception (if any) or simply ignore
+        }
+    }
+
+    private static void handleSubscribePopUp(WebDriver driver) {
+        try {
+            WebElement subscribePopUp = driver.findElement(By.xpath("//div[contains(@class, 'subscribe-popup')]"));
+            if (subscribePopUp.isDisplayed()) {
+                WebElement closeButton = driver.findElement(By.xpath("//div[contains(@class, 'subscribe-popup')]/button[@class='close-button']"));
+                if (closeButton.isDisplayed()) {
+                    closeButton.click();
+                }
+            }
+        } catch (Exception e) {
+            // Handle exception (if any) or simply ignore
+        }
+    }
+    
+    private static void scrollToElementRandstand(WebDriver driver, By by) {
+        WebElement element = driver.findElement(by);
+        element.click(); // Clicking the element to scroll into view
+    }
+
+    private static void scrollToElement(WebDriver driver, By by) {
+        WebElement element = driver.findElement(by);
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({ behavior: 'auto', block: 'center', inline: 'center' });", element);
+    }
+    
+    private static void printMenu() {
+        System.out.println("\nMenu:");
+        System.out.println("1. Spell Checker");
+        System.out.println("2. Word Frequency");
+        System.out.println("3. Page Ranking");
+        System.out.println("4. Word Completion");
+        System.out.println("5. Inverted Indexing");
+        System.out.println("6. HTML Parsing");
+        System.out.println("7. Data Validation");
+        System.out.println("8. Pattern Regex");
+        System.out.println("9. Quit");
+    }
+    
+    private static int getUserChoice(Scanner scanner) {
+        System.out.print("Enter your choice (1-9): ");
+        while (true) {
+            try {
+                int choice = Integer.parseInt(scanner.nextLine().trim());
+                return choice;
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+}

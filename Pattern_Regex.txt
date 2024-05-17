@@ -1,0 +1,67 @@
+package FirstFolder;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.Scanner;
+
+public class Pattern_Regex {
+
+    public static void main(String[] args) {
+        try {
+            // Replace these file paths with the actual paths to your text files
+            String[] file__Paths = {
+                    "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\indeed.txt",
+                    "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\monster.txt",
+                    "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\randstand.txt"
+            };
+
+            // Take user input for the pattern to find
+            Scanner scanner = new Scanner(System.in);
+            System.out.print("Enter the pattern to find: ");
+            String pattern_To_Find = scanner.nextLine();
+
+            // Call the method to find and print the matched pattern or indicate not found
+            for (String file_Path : file__Paths) {
+                find_And_Print_Pattern(file_Path, pattern_To_Find);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        
+        System.out.print("\nDo you want to check another word? (yes/no): ");
+        Scanner scanneer = new Scanner(System.in);
+        String conttRank = scanneer.nextLine().toLowerCase();
+        if (conttRank.equals("yes")) {
+        	main(args);  // Call the spellCheck method recursively
+        } else {
+            System.out.println("Exiting the pattern regex. Goodbye!");
+        }
+    }
+
+    private static void find_And_Print_Pattern(String file_Path, String pattern_To_Find) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file_Path))) {
+            String line;
+            Pattern patterrn = Pattern.compile(pattern_To_Find);
+            boolean pattern_Found = false;
+
+            while ((line = reader.readLine()) != null) {
+                Matcher matccher = patterrn.matcher(line);
+
+                // Find and print all occurrences of the pattern in the current line
+                while (matccher.find()) {
+                    System.out.println("Found match in " + file_Path + ": " + matccher.group());
+                    pattern_Found = true;
+                }
+            }
+
+            // Print a message if the pattern is not found
+            if (!pattern_Found) {
+                System.out.println("Pattern not found in " + file_Path + ".");
+            }
+        }
+    }
+}

@@ -1,0 +1,120 @@
+package FirstFolder;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+
+class TrieNode {
+    char fileData;
+    boolean isEndOfWord;
+    Map<Character, TrieNode> children;
+
+    TrieNode(char fileData) {
+        this.fileData = fileData;
+        this.isEndOfWord = false;
+        this.children = new HashMap<>();
+    }
+}
+
+class Trie {
+    private TrieNode trieRootNode;
+
+    Trie() {
+        trieRootNode = new TrieNode(' ');
+    }
+
+    void insert(String wordToInsert) {
+        TrieNode trieCurretNode = trieRootNode;
+        for (char ch : wordToInsert.toCharArray()) {
+            trieCurretNode.children.putIfAbsent(ch, new TrieNode(ch));
+            trieCurretNode = trieCurretNode.children.get(ch);
+        }
+        trieCurretNode.isEndOfWord = true;
+    }
+
+    List<String> autoComplete(String prefixToSearch) {
+        TrieNode trieCurretNode = trieRootNode;
+        for (char ch : prefixToSearch.toCharArray()) {
+            if (!trieCurretNode.children.containsKey(ch)) {
+                return new ArrayList<>();
+            }
+            trieCurretNode = trieCurretNode.children.get(ch);
+        }
+        return findAllWords(trieCurretNode, prefixToSearch);
+    }
+
+    private List<String> findAllWords(TrieNode node, String prefixToSearch) {
+        List<String> findAllWordsRes = new ArrayList<>();
+        if (node.isEndOfWord) {
+            findAllWordsRes.add(prefixToSearch);
+        }
+        for (TrieNode child : node.children.values()) {
+            findAllWordsRes.addAll(findAllWords(child, prefixToSearch + child.fileData));
+        }
+        return findAllWordsRes;
+    }
+
+    void processFilesAndPrintCompletions(String[] fileNamesToProcess, String userInputForWordCompletion) {
+        // Load words from web-scraped text files
+        for (String fileNameToProcess : fileNamesToProcess) {
+            loadWordsFromFile(fileNameToProcess, this);
+        }
+
+        // Get word completions
+        Set<String> uniqueWordCompletions = new HashSet<>(autoComplete(userInputForWordCompletion));
+
+        // Display results
+        System.out.println("Word completions for '" + userInputForWordCompletion + "':");
+        for (String wordComp : uniqueWordCompletions) {
+            System.out.println(wordComp);
+        }
+    }
+
+    private void loadWordsFromFile(String fileNameToLoadWords, Trie trie) {
+        try (BufferedReader bufferDataRdr = new BufferedReader(new FileReader(fileNameToLoadWords))) {
+            String line;
+            while ((line = bufferDataRdr.readLine()) != null) {
+                // Split the line into individual words
+                String[] words = line.trim().toLowerCase().split("\\s+");
+
+                // Insert each unique wordToInsert into the Trie
+                Set<String> uniqueWords = new HashSet<>(Arrays.asList(words));
+                for (String wordToInsert : uniqueWords) {
+                    trie.insert(wordToInsert);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+public class wordcomppletion {
+    public static void main(String[] args) {
+        Trie trie = new Trie();
+
+        // Take user input
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter a prefix to search: ");
+        String userInputForWordCompletion = scanner.nextLine();
+
+        // Process files and print completions
+        trie.processFilesAndPrintCompletions(new String[]{
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\indeed.txt",
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\monster.txt",
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\randstand.txt"
+        }, userInputForWordCompletion);
+
+        
+        System.out.print("\nDo you want to check another wordToInsert? (yes/no): ");
+        String contWordComp = scanner.nextLine().toLowerCase();
+        if (contWordComp.equals("yes")) {
+            main(args);  // Call the spellCheck method recursively
+        } else {
+            System.out.println("Exiting the spell checker. Goodbye!");
+        }
+        
+        scanner.close();
+    }
+}

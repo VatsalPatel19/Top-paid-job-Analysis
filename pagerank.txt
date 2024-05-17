@@ -1,0 +1,96 @@
+package FirstFolder;
+
+import java.io.*;
+import java.util.*;
+
+public class pagerank {
+
+    public static void main(String[] args) {
+        // Example usage:
+        pageRanking();
+    }
+
+    public static void pageRanking() {
+        // File paths for three text files
+        String[] file__Paths = {
+                "C:\\Users\\vksp1\\eclipse-workspace\\ACC_project\\src\\indeed.txt",
+                "C:\\Users\\vksp1\\eclipse-workspace\\ACC_project\\src\\monster.txt",
+                "C:\\Users\\vksp1\\eclipse-workspace\\ACC_project\\src\\randstand.txt"
+        };
+
+        // Read user input for the word to rank pages
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter the word to rank pages: ");
+        String wordToRank = scanner.nextLine().toLowerCase();
+
+        // Array to store page ranks for each file
+        double[] pageRanks = new double[file__Paths.length];
+
+        for (int i = 0; i < file__Paths.length; i++) {
+            double pageRank = calculatePageRank(file__Paths[i], wordToRank);
+            pageRanks[i] = pageRank;
+        }
+
+        // Sort and print page ranks
+        sortAndPrintPageRanks(file__Paths, pageRanks);
+        
+        System.out.print("\nDo you want to check another word? (yes/no): ");
+        String contRank = scanner.nextLine().toLowerCase();
+        if (contRank.equals("yes")) {
+        	pageRanking();  // Call the spellCheck method recursively
+        } else {
+            System.out.println("Exiting the page ranking. Goodbye!");
+        }
+    }
+
+    private static void sortAndPrintPageRanks(String[] filePaths, double[] pageRanks) {
+        // Simple bubble sort for demonstration purposes
+        for (int i = 0; i < pageRanks.length - 1; i++) {
+            for (int j = 0; j < pageRanks.length - i - 1; j++) {
+                if (pageRanks[j] < pageRanks[j + 1]) {
+                    // Swap page ranks
+                    double tempRank = pageRanks[j];
+                    pageRanks[j] = pageRanks[j + 1];
+                    pageRanks[j + 1] = tempRank;
+
+                    // Swap file paths accordingly
+                    String tempPath = filePaths[j];
+                    filePaths[j] = filePaths[j + 1];
+                    filePaths[j + 1] = tempPath;
+                }
+            }
+        }
+
+        // Print sorted page ranks
+        for (int u = 0; u < filePaths.length; u++) {
+            System.out.printf("PageRank for %s: %.2f%%%n", filePaths[u], pageRanks[u] * 100);
+        }
+    }
+
+    private static double calculatePageRank(String filePath, String wordToRank) {
+        int totalWords = 0;
+        int targetWordCount = 0;
+
+        try (BufferedReader readre = new BufferedReader(new FileReader(filePath))) {
+            String line2;
+            while ((line2 = readre.readLine()) != null) {
+                String[] words = line2.split("\\s+");
+                for (String word : words) {
+                    // Remove punctuation and convert to lowercase for comparison
+                    word = word.replaceAll("[^a-zA-Z]", "").toLowerCase();
+                    if (!word.isEmpty()) {
+                        totalWords++;
+                        if (word.equals(wordToRank)) {
+                            targetWordCount++;
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Calculate page rank based on the frequency of the target word
+        return (totalWords > 0) ? (double) targetWordCount / totalWords : 0.0;
+    }
+}

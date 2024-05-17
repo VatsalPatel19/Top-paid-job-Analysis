@@ -1,0 +1,83 @@
+package FirstFolder;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.*;
+
+public class Data_Validation_Using_Regex {
+
+    public static void main(String[] args) {
+        Data_Validation_Using_Regex validator = new Data_Validation_Using_Regex();
+        validator.runDataValidationFeature();
+    }
+
+    void runDataValidationFeature() {
+        String[] file_Names = {
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\indeed.txt",
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\monster.txt",
+                "C:\\Users\\vksp1\\eclipse-workspace\\ScrapeAss3\\src\\randstand.txt"
+        };
+
+        for (String file_Name : file_Names) {
+            processFileAndValidate(file_Name);
+        }
+        
+        System.out.print("\nDo you want to check another word? (yes/no): ");
+        Scanner scanner = new Scanner(System.in);
+        String cont_Rank = scanner.nextLine().toLowerCase();
+        if (cont_Rank.equals("yes")) {
+        	runDataValidationFeature();  // Call the spellCheck method recursively
+        } else {
+            System.out.println("Exiting the data validator. Goodbye!");
+        }
+    }
+
+    private void processFileAndValidate(String file_Name) {
+        try (BufferedReader br = new BufferedReader(new FileReader(file_Name))) {
+            System.out.println("Processing and validating file: " + file_Name);
+            String line1;
+            while ((line1 = br.readLine()) != null) {
+                validateDataAndPrintResult(line1);
+            }
+        } catch (IOException e) {
+            System.out.println("Error processing file " + file_Name + ": " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    private void validateDataAndPrintResult(String datta) {
+        if (isValidEmail(datta)) {
+            System.out.println("Valid email: " + datta);
+        } else if (isValidMobileNumber(datta)) {
+            System.out.println("Valid mobile number: " + datta);
+        } else if (containsSalaryInfo(datta)) {
+            System.out.println("Valid data: " + datta);
+        } else {
+            System.out.println("Invalid data: " + datta);
+        }
+    }
+
+    private boolean isValidEmail(String emaill) {
+        String email_Regex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        return emaill.matches(email_Regex);
+    }
+
+    private boolean isValidMobileNumber(String mobile_Number) {
+        // Assuming a simple validation for a 10-digit mobile number
+        String mobile_Regex = "^[0-9]{10}$";
+        return mobile_Number.matches(mobile_Regex);
+    }
+
+    private boolean containsSalaryInfo(String linne) {
+        // Check if the line contains the word "salary"
+        String salary_Regex = "\\b(?:salary)\\b";
+        boolean contains_Salary = linne.toLowerCase().matches(".*" + salary_Regex + ".*");
+
+        // Check if the line contains the word "salaries"
+        String salaries_Regex = "\\b(?:salaries)\\b";
+        boolean contains_Salaries = linne.toLowerCase().matches(".*" + salaries_Regex + ".*");
+
+        return contains_Salary || contains_Salaries;
+    }
+}
